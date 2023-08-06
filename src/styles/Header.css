@@ -10,6 +10,10 @@ form {
     width: 30%;
 }
 
+.log :not(button, span){
+    padding: 0 !important;
+}
+
 @media (max-width: 380px) {
     .login {
         display: none;
@@ -17,9 +21,10 @@ form {
 }
 
 .search-container {
-    transition: width 0.5s;
+    transition: width 400ms;
     width: 5%;
     min-width: 40px;
+    max-width: 308px;
 }
 
 .search-button {
@@ -35,7 +40,6 @@ form {
 
 .search-container.expanded {
     width: 65%;
-    max-width: 308px;
 }
 
 .search-input.expanded {

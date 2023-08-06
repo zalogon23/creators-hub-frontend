@@ -1,11 +1,12 @@
-import { faCoins, faSearch } from '@fortawesome/free-solid-svg-icons'
+import { faSearch } from '@fortawesome/free-solid-svg-icons'
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome'
 import { Helper } from "../lib/helper"
 import GoogleSignInButton from './GoogleSignInButton'
-import { MouseEventHandler, useContext, useRef, useState } from 'react'
-import { userContext } from '../contexts/UserContext'
+import { MouseEventHandler, useState } from 'react'
 import 'react-toastify/dist/ReactToastify.css';
 import { ToastContainer, toast } from 'react-toastify'
+import { useSession } from 'next-auth/react'
+import { Oval } from "react-loader-spinner"
 
 type Props = {
     expanded: boolean,
@@ -14,7 +15,8 @@ type Props = {
 }
 
 function Header({ loading, expanded, setExpanded }: Props) {
-    const user = useContext(userContext)
+    const { data } = useSession()
+    const user = data?.customUser
     const [search, setSearch] = useState("")
 
     const handleSearch: MouseEventHandler<HTMLButtonElement> = async (e) => {
@@ -28,7 +30,6 @@ function Header({ loading, expanded, setExpanded }: Props) {
             toast.dismiss()
         }
     }
-
     return (
         <>
             <header
@@ -38,9 +39,13 @@ function Header({ loading, expanded, setExpanded }: Props) {
                     {
                         user
                             ?
-                            <img src={user.avatar} className="w-10 h-10 mr-2 rounded-full" />
+                            <img src={user?.avatar} className="w-10 h-10 mr-2 rounded-full" />
                             :
-                            <GoogleSignInButton />
+                            data === null
+                                ?
+                                <GoogleSignInButton />
+                                :
+                                <Oval color="#dc00f4" secondaryColor="#9ca3af" height={38} width={38} />
                     }
                 </div>
                 <form
