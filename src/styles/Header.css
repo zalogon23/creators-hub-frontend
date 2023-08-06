@@ -1,0 +1,48 @@
+form {
+    display: flex;
+}
+
+.search {
+    width: 95%;
+}
+
+.log {
+    width: 30%;
+}
+
+@media (max-width: 380px) {
+    .login {
+        display: none;
+    }
+}
+
+.search-container {
+    transition: width 0.5s;
+    width: 5%;
+    min-width: 40px;
+}
+
+.search-button {
+    cursor: pointer;
+    width: 40px;
+}
+
+.search-input {
+    flex: 1;
+    display: none;
+    border-radius: 0;
+}
+
+.search-container.expanded {
+    width: 65%;
+    max-width: 308px;
+}
+
+.search-input.expanded {
+    display: inline-block;
+}
+
+.search-container.expanded .search-button {
+    min-width: 0;
+    padding-right: 1%;
+}

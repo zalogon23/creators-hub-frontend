@@ -1,0 +1,83 @@
+.video-title {
+    border: solid 2px black;
+    border-radius: 5px;
+}
+
+.avatar {
+    width: 2.7rem;
+    height: 2.7rem;
+    object-fit: cover;
+    border-radius: 50%;
+}
+
+.creator {
+    min-height: 100%;
+    border: solid 2px black;
+    border-radius: 5px;
+}
+
+.subscribe-button {
+    color: black;
+    height: 2.5rem;
+}
+
+.dislike,
+.like,
+.send {
+    color: black;
+    width: 100%;
+    height: 2.5rem;
+    flex: 1;
+    font-size: 1.2rem;
+}
+
+.like,
+.dislike {
+    border-bottom: solid 2px black;
+}
+
+.like {
+    border-left: solid 2px black;
+}
+
+.send {
+    position: relative;
+}
+
+.reactions {
+    width: 7rem;
+    border: solid 2px black;
+    border-radius: 5px;
+}
+
+.send>svg {
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    transform: translate(-55%, -50%);
+}
+
+.comment {
+    display: flex;
+    justify-content: space-between;
+}
+
+.comment-head {
+    display: flex;
+    align-items: center;
+    width: 100%;
+}
+
+.comment input {
+    transition: 50ms;
+    outline: none;
+}
+
+.comment .focused {
+    border-bottom-color: black;
+    width: 88%;
+}
+
+.comment .focused::placeholder {
+    color: black;
+}

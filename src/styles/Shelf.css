@@ -1,0 +1,9 @@
+@media (min-width: 700px) {
+    .videos {
+        flex-direction: row !important;
+        flex-wrap: wrap;
+    }
+    .videos article{
+        width: 49% !important;
+    }
+}

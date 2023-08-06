@@ -1,0 +1,50 @@
+.video-card {
+    width: 100%; box-shadow: 0 0 0.7rem rgb(0, 0, 0, 0.2);
+    transition: 250ms;
+}
+
+.video-card a {
+    display: flex;
+    flex-direction: column;
+}
+
+.video-card:hover {
+    transform: scale(1.015);
+    box-shadow: 0 0 0.7rem #0003;
+}
+
+.thumbnail {
+    width: 100%;
+    aspect-ratio: 16/9;
+}
+
+.thumbnail span {
+    bottom: 0.3rem;
+    right: 0.3rem;
+    padding: 0.1rem 0.25rem;
+    border-radius: 0.2rem;
+    background-color: black;
+    color: white;
+    font-weight: 500;
+}
+
+.details {
+    display: flex;
+    align-items: center;
+    flex-grow: 1;
+    height: 5rem;
+    overflow: hidden;
+}
+
+.details a {
+    align-self: center;
+}
+
+.details h3 {
+    display: -webkit-box;
+    -webkit-line-clamp: 2;
+    -webkit-box-orient: vertical;
+    white-space: normal;
+    text-overflow: ellipsis;
+    overflow: hidden;
+}
