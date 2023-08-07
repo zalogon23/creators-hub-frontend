@@ -1,7 +1,7 @@
 
 class TokenService {
     getRefreshToken = async () => {
-        const response = await fetch(`${process.env.REACT_APP_BACKEND_URL}/auth/google/refresh-token`, {
+        const response = await fetch(`${process.env.NEXT_PUBLIC_BACKEND_URL}/auth/google/refresh-token`, {
             method: "POST",
             credentials: 'include'
         });
