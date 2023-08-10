@@ -2,12 +2,13 @@ import { faSearch, faUpload } from '@fortawesome/free-solid-svg-icons'
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome'
 import { Helper } from "../lib/helper"
 import GoogleSignInButton from './GoogleSignInButton'
-import { MouseEventHandler, createRef, useState } from 'react'
+import { MouseEventHandler, createRef, useEffect, useState } from 'react'
 import 'react-toastify/dist/ReactToastify.css';
 import { ToastContainer, toast } from 'react-toastify'
-import { useSession } from 'next-auth/react'
+import { signIn, useSession } from 'next-auth/react'
 import { Oval } from "react-loader-spinner"
 import { videoService } from '@/services/VideoService'
+import { Button, Dialog, DialogActions, DialogContent, DialogContentText, DialogTitle } from "@mui/material"
 
 type Props = {
     expanded: boolean,
@@ -19,6 +20,7 @@ function Header({ loading, expanded, setExpanded }: Props) {
     const { data } = useSession()
     const user = data?.customUser
     const [search, setSearch] = useState("")
+    const [open, setOpen] = useState(false)
     const inputFileRef = createRef<HTMLInputElement>()
 
     const handleSearch: MouseEventHandler<HTMLButtonElement> = async (e) => {
@@ -32,6 +34,9 @@ function Header({ loading, expanded, setExpanded }: Props) {
             toast.dismiss()
         }
     }
+    useEffect(() => {
+        if (user?.error) signIn()
+    }, [data])
     return (
         <>
             <header
@@ -48,6 +53,51 @@ function Header({ loading, expanded, setExpanded }: Props) {
                                 <GoogleSignInButton />
                                 :
                                 <Oval color="#000" secondaryColor="#9ca3af" height={38} width={38} />
+                    }
+                    {
+                        user && open
+                        &&
+                        <Dialog
+                            open={open}
+                            onClose={() => {
+                                if (inputFileRef.current) {
+                                    inputFileRef.current.files = null
+                                }
+                                setOpen(false)
+                            }}
+                            aria-labelledby="alert-dialog-title"
+                            aria-describedby="alert-dialog-description"
+                        >
+                            <DialogTitle id="alert-dialog-title">
+                                Upload Videos
+                            </DialogTitle>
+                            <DialogContent>
+                                <DialogContentText id="alert-dialog-description">
+                                    Do you wanna upload this video?
+                                </DialogContentText>
+                            </DialogContent>
+                            <DialogActions>
+                                <Button onClick={async () => {
+                                    setOpen(false)
+                                    const video = inputFileRef.current?.files![0]
+                                    if (!video) return
+                                    var data = new FormData()
+                                    data.append('video', video)
+                                    const json = await videoService.uploadVideo(data, user.access_token)
+                                    if (json?.url) {
+                                        toast.info("Video uploaded succesfully")
+                                    }
+                                }}>Yes</Button>
+                                <Button onClick={() => {
+                                    if (inputFileRef.current) {
+                                        inputFileRef.current.value = ""
+                                    }
+                                    setOpen(false)
+                                }} autoFocus>
+                                    No
+                                </Button>
+                            </DialogActions>
+                        </Dialog>
                     }
                 </div>
                 <div className="w-full flex justify-end gap-1">
@@ -75,13 +125,7 @@ function Header({ loading, expanded, setExpanded }: Props) {
                                 <FontAwesomeIcon icon={faUpload} />
                             </button>
                             <input onChange={async (e) => {
-                                const video = e.target.files![0]
-                                var data = new FormData()
-                                data.append('video', video)
-                                const json = await videoService.uploadVideo(data)
-                                if (json?.url) {
-                                    toast.info("Video uploaded succesfully")
-                                }
+                                setOpen(true)
                             }} ref={inputFileRef} type="file" className="w-0" />
                         </form>
                     }
