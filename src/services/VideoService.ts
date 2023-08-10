@@ -10,16 +10,25 @@ class VideoService {
         const json = await response.json()
         return json
     }
-    async getVideos(video: any, access_token: string) {
+    async getVideos(access_token: string) {
         const response = await fetch(`${process.env.NEXT_PUBLIC_BACKEND_URL}/video`, {
             method: "GET",
             headers: {
                 "Authorization": `Bearer ${access_token}`,
-            },
-            body: video
+            }
         });
         const json = await response.json()
-        return json
+        return json.videos.map((video: any) => {
+            return ({
+                title: "Como jugar a las cartas siendo ciego? Como jugar a las cartas siendo ciego?Como jugar a las cartas siendo ciego? Como jugar a las cartas siendo ciego?",
+                thumbnail: "https://i.ytimg.com/vi/utX0yRJHiZ8/maxresdefault.jpg",
+                creator: {
+                    id: video.creatorId,
+                    avatar: "https://m.media-amazon.com/images/M/MV5BMTkzMDExOTIyOV5BMl5BanBnXkFtZTYwNTQ2MDM0._V1_FMjpg_UX1000_.jpg"
+                },
+                ...video
+            })
+        })
     }
 }
 

@@ -1,58 +1,20 @@
-import React from 'react'
+import React, { useEffect, useState } from 'react'
 import VideoCard from './VideoCard'
+import { videoService } from '@/services/VideoService'
+import { useSession } from 'next-auth/react'
 
 function Shelf() {
-    const videos = [
-        {
-            title: "Como jugar a las cartas siendo ciego? Como jugar a las cartas siendo ciego?Como jugar a las cartas siendo ciego? Como jugar a las cartas siendo ciego?",
-            duration: 63,
-            thumbnail: "https://i.ytimg.com/vi/utX0yRJHiZ8/maxresdefault.jpg",
-            id: "2f424f34f3r5f",
-            creator: {
-                id: "dfsdfsdfsdfsdfsd",
-                avatar: "https://m.media-amazon.com/images/M/MV5BMTkzMDExOTIyOV5BMl5BanBnXkFtZTYwNTQ2MDM0._V1_FMjpg_UX1000_.jpg"
+    const [videos, setVideos] = useState([])
+    const { data } = useSession()
+    useEffect(() => {
+        (async () => {
+            if (data?.customUser && data?.customUser?.id) {
+                const myVideos = await videoService.getVideos(data.customUser?.id)
+                console.log("these are the videos: " + JSON.stringify(videos))
+                setVideos(myVideos)
             }
-        },
-        {
-            title: "Como jugar a las cartas siendo ciego? Como jugar a las cartas siendo ciego?Como jugar a las cartas siendo ciego? Como jugar a las cartas siendo ciego?",
-            duration: 63,
-            thumbnail: "https://i.ytimg.com/vi/utX0yRJHiZ8/maxresdefault.jpg",
-            id: "2f424f34f3r5f",
-            creator: {
-                id: "dfsdfsdfsdfsdfsd",
-                avatar: "https://m.media-amazon.com/images/M/MV5BMTkzMDExOTIyOV5BMl5BanBnXkFtZTYwNTQ2MDM0._V1_FMjpg_UX1000_.jpg"
-            }
-        },
-        {
-            title: "Como jugar a las cartas siendo ciego? Como jugar a las cartas siendo ciego?Como jugar a las cartas siendo ciego? Como jugar a las cartas siendo ciego?",
-            duration: 63,
-            thumbnail: "https://i.ytimg.com/vi/utX0yRJHiZ8/maxresdefault.jpg",
-            id: "2f424f34f3r5f",
-            creator: {
-                id: "dfsdfsdfsdfsdfsd",
-                avatar: "https://m.media-amazon.com/images/M/MV5BMTkzMDExOTIyOV5BMl5BanBnXkFtZTYwNTQ2MDM0._V1_FMjpg_UX1000_.jpg"
-            }
-        },
-        {
-            title: "Como jugar a las cartas siendo ciego? Como jugar a las cartas siendo ciego?Como jugar a las cartas siendo ciego? Como jugar a las cartas siendo ciego?",
-            duration: 63,
-            thumbnail: "https://i.ytimg.com/vi/utX0yRJHiZ8/maxresdefault.jpg",
-            id: "2f424f34f3r5f",
-            creator: {
-                id: "dfsdfsdfsdfsdfsd",
-                avatar: "https://m.media-amazon.com/images/M/MV5BMTkzMDExOTIyOV5BMl5BanBnXkFtZTYwNTQ2MDM0._V1_FMjpg_UX1000_.jpg"
-            }
-        }, {
-            title: "Como jugar a las cartas siendo ciego? Como jugar a las cartas siendo ciego?Como jugar a las cartas siendo ciego? Como jugar a las cartas siendo ciego?",
-            duration: 63,
-            thumbnail: "https://i.ytimg.com/vi/utX0yRJHiZ8/maxresdefault.jpg",
-            id: "2f424f34f3r5f",
-            creator: {
-                id: "dfsdfsdfsdfsdfsd",
-                avatar: "https://m.media-amazon.com/images/M/MV5BMTkzMDExOTIyOV5BMl5BanBnXkFtZTYwNTQ2MDM0._V1_FMjpg_UX1000_.jpg"
-            }
-        }
-    ]
+        })()
+    }, [data])
     return (
         <section>
             <div className="videos flex flex-col gap-3">
