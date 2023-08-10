@@ -18,7 +18,7 @@ function Shelf() {
     return (
         <section>
             <div className="videos flex flex-col gap-3">
-                {videos.map((video, id) => (<VideoCard key={id} video={video} />))}
+                {videos.map((video: any) => (<VideoCard key={video.id} video={video} />))}
             </div>
         </section>
     )

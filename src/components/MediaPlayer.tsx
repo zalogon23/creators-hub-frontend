@@ -2,9 +2,11 @@ import { faExpand, faPause, faPlay } from '@fortawesome/free-solid-svg-icons';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import React, { MouseEventHandler, createRef, useEffect, useRef, useState } from 'react';
 
-type Props = {};
+type Props = {
+    url: string
+};
 
-function MediaPlayer({ }: Props) {
+function MediaPlayer({ url }: Props) {
     const [paused, setPaused] = useState(true);
     const [interacted, setInteracted] = useState(false);
     const [hovered, setHovered] = useState(false);
@@ -172,7 +174,7 @@ function MediaPlayer({ }: Props) {
                     autoPlay
                     onClick={toggle}
                     poster="https://dreamlanddental.com/wp-content/uploads/2018/01/iStock-510634014.jpg"
-                    src="https://res.cloudinary.com/binaring/video/upload/v1683759656/dentist_olmktv.mp4"
+                    src={url}
                 >
                 </video>
                 <div className={`play alert ${!paused && "active-alert"}`}>
