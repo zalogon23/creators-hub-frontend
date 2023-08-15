@@ -1,6 +1,8 @@
 import { useEffect, useRef, useState } from 'react'
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome'
 import { faPaperPlane, faThumbsDown, faThumbsUp } from '@fortawesome/free-solid-svg-icons'
+import { reactionService } from '@/services/ReactionService'
+import { useSession } from 'next-auth/react'
 
 type Props = {
     video: any
@@ -10,6 +12,26 @@ function MediaDescription({ video }: Props) {
     const [comment, setComment] = useState("")
     const [isCommentFocus, setIsCommentFocus] = useState(false)
     const focused = useRef(isCommentFocus)
+    const [liked, setLiked] = useState(null as null | boolean)
+
+    const { data } = useSession()
+    const user = data?.customUser
+
+    const like = async () => {
+        if (!user || liked) return
+        const result = await reactionService.reactVideo(video.id, true, user.access_token)
+        if (result.successful) {
+            setLiked(true)
+        }
+    }
+
+    const dislike = async () => {
+        if (!user || !liked) return
+        const result = await reactionService.reactVideo(video.id, false, user.access_token)
+        if (result.successful) {
+            setLiked(false)
+        }
+    }
     useEffect(() => {
         document.addEventListener("click", (e: MouseEvent) => {
             if (!(e.target as any).classList.contains("comment-input") && !(e.target as any).classList.contains("comment-send") && focused.current) {
@@ -17,6 +39,18 @@ function MediaDescription({ video }: Props) {
             }
         })
     }, [])
+
+    useEffect(() => {
+        (async () => {
+            if (user) {
+                const result = await reactionService.getVideoReaction(video.id, user.access_token)
+                console.log(result)
+                if (result.message) return
+                setLiked(result.reaction.liked)
+            }
+        })()
+    }, [data])
+
     useEffect(() => {
         focused.current = isCommentFocus
     }, [isCommentFocus])
@@ -45,11 +79,11 @@ function MediaDescription({ video }: Props) {
                 </div>
                 <div className="reactions flex flex-col items-center ml-3">
                     <div className="flex flex-row w-full">
-                        <button className="dislike">
-                            <FontAwesomeIcon icon={faThumbsDown} />
+                        <button onClick={dislike} className="dislike">
+                            <FontAwesomeIcon className={`${liked === false ? "text-black" : "text-gray-400"}`} icon={faThumbsDown} />
                         </button>
-                        <button className="like">
-                            <FontAwesomeIcon icon={faThumbsUp} />
+                        <button onClick={like} className="like">
+                            <FontAwesomeIcon className={`${liked === true ? "text-black" : "text-gray-400"}`} icon={faThumbsUp} />
                         </button>
                     </div>
                     <button
