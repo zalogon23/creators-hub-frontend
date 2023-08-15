@@ -5,6 +5,7 @@ class UserService {
                 "Authorization": `Bearer ${access_token}`,
             }
         });
+        console.log(response)
         const json = await response.json()
         return json
     }

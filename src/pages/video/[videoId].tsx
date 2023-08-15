@@ -10,7 +10,6 @@ function VideoScreen() {
     const { videoId } = useRouter().query
     const [video, setVideo] = useState(null as any)
     const [expanded, setExpanded] = useState(false)
-    const [loading, setLoading] = useState(false)
     useEffect(() => {
         (async () => {
             const retrievedVideo = await videoService.getVideo(videoId as string)
@@ -19,13 +18,13 @@ function VideoScreen() {
     }, [])
     return (
         <Scaffold handleClick={() => setExpanded(false)} shelf>
-            <Header {...{ expanded, setExpanded, loading }} />
+            <Header {...{ expanded, setExpanded }} />
             {
                 video
                 &&
                 <>
-                    <MediaPlayer url={video.url} />
-                    <MediaDescription />
+                    <MediaPlayer url={video.url} thumbnail={video.thumbnail} />
+                    <MediaDescription video={video} />
                 </>
             }
         </Scaffold>

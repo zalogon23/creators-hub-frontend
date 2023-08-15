@@ -24,14 +24,10 @@ export default NextAuth({
     ],
     callbacks: {
         async jwt({ token, user, account }) {
-            console.log("account: " + JSON.stringify(account))
-            console.log("user: " + JSON.stringify(user))
-            console.log("token: " + JSON.stringify(token))
             if (account) {
                 token.access_token = account.access_token;
                 token.refresh_token = account.refresh_token;
                 token.expires_at = account.expires_at
-                console.log("Getting token, first time: " + JSON.stringify(token))
                 return token
             }
 
@@ -45,15 +41,14 @@ export default NextAuth({
             session.customUser = {} as UserDTO
             try {
                 // Send properties to the client, like an access_token from a provider.
-                console.log("This is the token: " + JSON.stringify(token))
+                console.log("This is the token SESSION: " + JSON.stringify(token))
                 if (token?.error) {
-                    console.log("THERE IS AN ERROR WITH THIS TOKEN")
                     session.customUser.error = token?.error as boolean
                     return session
                 }
                 session.customUser = await userService.getUser(token.access_token as string)
+                console.log("This is the user SESSION: " + JSON.stringify(session.customUser))
                 session.customUser.access_token = token.access_token as string
-                console.log("This is the user: " + JSON.stringify(session.customUser))
                 return session;
             } catch (err) {
                 session.customUser.error = true
@@ -65,6 +60,8 @@ export default NextAuth({
 })
 
 async function refreshAccessToken(token: JWT) {
+    console.log("old expire: " + token.expires_at)
+
     try {
         const url =
             "https://oauth2.googleapis.com/token?" +
@@ -85,14 +82,16 @@ async function refreshAccessToken(token: JWT) {
         const refreshedTokens = await response.json()
         console.log("the result from the refresh token: " + JSON.stringify(refreshedTokens))
 
-        if (!response.ok) {
+        if (!refreshedTokens) {
             throw refreshedTokens
         }
+
+        console.log("new expire: " + new Date(Date.now() + refreshedTokens.expires_in * 1000))
 
         return {
             ...token,
             access_token: refreshedTokens.access_token,
-            expires_at: refreshedTokens.expires_at,
+            expires_at: Date.now() + refreshedTokens.expires_in * 1000,
             refresh_token: refreshedTokens.refresh_token ?? token.refreshToken,
         }
     } catch (error) {

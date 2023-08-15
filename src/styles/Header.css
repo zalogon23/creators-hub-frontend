@@ -50,3 +50,8 @@ form {
     min-width: 0;
     padding-right: 1%;
 }
+
+.description{
+    min-height: 6rem;
+    max-height: 12rem;
+}

@@ -1,6 +1,5 @@
-import { faSearch, faUpload } from '@fortawesome/free-solid-svg-icons'
+import { faUpload } from '@fortawesome/free-solid-svg-icons'
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome'
-import { Helper } from "../lib/helper"
 import GoogleSignInButton from './GoogleSignInButton'
 import { MouseEventHandler, createRef, useEffect, useState } from 'react'
 import 'react-toastify/dist/ReactToastify.css';
@@ -9,31 +8,22 @@ import { signIn, useSession } from 'next-auth/react'
 import { Oval } from "react-loader-spinner"
 import { videoService } from '@/services/VideoService'
 import { Button, Dialog, DialogActions, DialogContent, DialogContentText, DialogTitle } from "@mui/material"
+import SearchBar from './SearchBar'
 
 type Props = {
     expanded: boolean,
     setExpanded: React.Dispatch<React.SetStateAction<boolean>>,
-    loading: boolean
 }
 
-function Header({ loading, expanded, setExpanded }: Props) {
+function Header({ expanded, setExpanded }: Props) {
     const { data } = useSession()
     const user = data?.customUser
-    const [search, setSearch] = useState("")
     const [open, setOpen] = useState(false)
-    const inputFileRef = createRef<HTMLInputElement>()
+    const [title, setTitle] = useState("")
+    const [description, setDescription] = useState("")
+    const videoFileRef = createRef<HTMLInputElement>()
+    const thumbnailFileRef = createRef<HTMLInputElement>()
 
-    const handleSearch: MouseEventHandler<HTMLButtonElement> = async (e) => {
-        e.stopPropagation()
-        try {
-            if (!expanded) {
-                setExpanded(true)
-                return
-            }
-        } catch (err) {
-            toast.dismiss()
-        }
-    }
     useEffect(() => {
         if (user?.error) signIn()
     }, [data])
@@ -60,8 +50,8 @@ function Header({ loading, expanded, setExpanded }: Props) {
                         <Dialog
                             open={open}
                             onClose={() => {
-                                if (inputFileRef.current) {
-                                    inputFileRef.current.files = null
+                                if (videoFileRef.current) {
+                                    videoFileRef.current.files = null
                                 }
                                 setOpen(false)
                             }}
@@ -69,28 +59,64 @@ function Header({ loading, expanded, setExpanded }: Props) {
                             aria-describedby="alert-dialog-description"
                         >
                             <DialogTitle id="alert-dialog-title">
-                                Upload Videos
+                                Upload Video
                             </DialogTitle>
                             <DialogContent>
                                 <DialogContentText id="alert-dialog-description">
-                                    Do you wanna upload this video?
+                                    <span>Please fill up the following details before uploading</span>
+                                    <form className="flex flex-col gap-3 py-3">
+                                        <label>
+                                            <p className="font-bold">Title</p>
+                                            <input value={title} onChange={(e) => setTitle(e.target.value)} className="mt-1 w-full bg-gray-100 p-2 rounded-md" type="text" placeholder="eg: How to fight a bear?" />
+                                        </label>
+                                        <label>
+                                            <p className="font-bold">Description</p>
+                                            <textarea value={description} onChange={(e) => setDescription(e.target.value)} className="mt-1 description w-full bg-gray-100 p-2 rounded-md" placeholder="eg: In this video you'll see the techniques to..." />
+                                        </label>
+                                        <div>
+                                            <p className="font-bold">Thumbnail (optional)</p>
+                                            <button
+                                                onClick={(e) => {
+                                                    e.preventDefault()
+                                                    thumbnailFileRef.current!.click()
+                                                }} className="mt-1 search-button text-gray-400 py-2">
+                                                <FontAwesomeIcon icon={faUpload} />
+                                            </button>
+                                            <input onChange={async (e) => {
+                                                setOpen(true)
+                                            }} ref={thumbnailFileRef} type="file" className="w-0" />
+                                        </div>
+                                    </form>
                                 </DialogContentText>
                             </DialogContent>
                             <DialogActions>
                                 <Button onClick={async () => {
+                                    if (!title || !description) {
+                                        console.log("These fields are not set")
+                                        if (!title) toast.error("There is no title set")
+                                        if (!description) toast.error("There is no description set")
+                                        return
+                                    }
                                     setOpen(false)
-                                    const video = inputFileRef.current?.files![0]
+                                    const video = videoFileRef.current?.files![0]
+                                    const thumbnail = thumbnailFileRef.current?.files![0]
+                                    const videoConfig = {
+                                        title, description
+                                    }
                                     if (!video) return
                                     var data = new FormData()
                                     data.append('video', video)
+                                    if (thumbnail) data.append('thumbnail', thumbnail)
+                                    data.append('title', title)
+                                    data.append('description', description)
                                     const json = await videoService.uploadVideo(data, user.access_token)
                                     if (json?.url) {
                                         toast.info("Video uploaded succesfully")
                                     }
                                 }}>Yes</Button>
                                 <Button onClick={() => {
-                                    if (inputFileRef.current) {
-                                        inputFileRef.current.value = ""
+                                    if (videoFileRef.current) {
+                                        videoFileRef.current.value = ""
                                     }
                                     setOpen(false)
                                 }} autoFocus>
@@ -101,18 +127,7 @@ function Header({ loading, expanded, setExpanded }: Props) {
                     }
                 </div>
                 <div className="w-full flex justify-end gap-1">
-                    <form
-                        className={`search-container${expanded ? ' expanded' : ''} border-gray-400 border-2 rounded-3xl overflow-hidden`}
-                        onSubmit={Helper.prevent}>
-                        <input
-                            onClick={e => e.stopPropagation()}
-                            value={search} onChange={e => setSearch(e.target.value)} className={`search-input${expanded ? ' expanded' : ''} py-2 rounded-l-3xl pl-3 pr-1 search border-y-0 border-l-0 border-r-gray-400 border-2`} type="text" placeholder="What are you looking for?" />
-                        <button
-                            disabled={loading}
-                            onClick={handleSearch} className="search-button text-gray-400 py-2">
-                            <FontAwesomeIcon icon={faSearch} />
-                        </button>
-                    </form>
+                    <SearchBar />
                     {
                         user
                         &&
@@ -120,23 +135,23 @@ function Header({ loading, expanded, setExpanded }: Props) {
                             <button
                                 onClick={(e) => {
                                     e.preventDefault()
-                                    inputFileRef.current!.click()
+                                    videoFileRef.current!.click()
                                 }} className="search-button text-gray-400 py-2">
                                 <FontAwesomeIcon icon={faUpload} />
                             </button>
                             <input onChange={async (e) => {
                                 setOpen(true)
-                            }} ref={inputFileRef} type="file" className="w-0" />
+                            }} ref={videoFileRef} type="file" className="w-0" />
                         </form>
                     }
                 </div>
             </header >
             <ToastContainer
                 position="bottom-center"
-                autoClose={4400} // Set the time (in milliseconds) that the toast should be shown
+                autoClose={3000} // Set the time (in milliseconds) that the toast should be shown
                 hideProgressBar={true}
                 closeOnClick
-                pauseOnHover
+                pauseOnHover={false}
                 draggable
                 pauseOnFocusLoss
             />

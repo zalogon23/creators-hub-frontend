@@ -2,9 +2,11 @@ import { useEffect, useRef, useState } from 'react'
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome'
 import { faPaperPlane, faThumbsDown, faThumbsUp } from '@fortawesome/free-solid-svg-icons'
 
-type Props = {}
+type Props = {
+    video: any
+}
 
-function MediaDescription({ }: Props) {
+function MediaDescription({ video }: Props) {
     const [comment, setComment] = useState("")
     const [isCommentFocus, setIsCommentFocus] = useState(false)
     const focused = useRef(isCommentFocus)
@@ -24,19 +26,19 @@ function MediaDescription({ }: Props) {
         >
             <h3
                 className="text-2xl font-semibold p-4 video-title"
-            >Como hacerle una operación de hocico a una niña</h3>
+            >{video.title}</h3>
             <section
                 className="flex flex-row pt-3 justify-between">
                 <div className="flex flex-row items-center w-full justify-start">
                     <div className="creator w-full flex flex-row items-center py-2 px-4">
                         <img
                             className="avatar"
-                            src="https://familydoctor.org/wp-content/uploads/2018/02/41808433_l.jpg" alt="" />
+                            src={video.creator.avatar} alt="" />
                         <div
                             className="avatar-details flex flex-col pl-3">
                             <h3
                                 className="font-bold"
-                            >El DOC GUILLAO</h3>
+                            >{video.creator.username}</h3>
                             <span>200 subscribers</span>
                         </div>
                     </div>

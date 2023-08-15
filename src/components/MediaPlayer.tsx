@@ -3,10 +3,11 @@ import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import React, { MouseEventHandler, createRef, useEffect, useRef, useState } from 'react';
 
 type Props = {
-    url: string
+    url: string,
+    thumbnail: string
 };
 
-function MediaPlayer({ url }: Props) {
+function MediaPlayer({ url, thumbnail }: Props) {
     const [paused, setPaused] = useState(true);
     const [interacted, setInteracted] = useState(false);
     const [hovered, setHovered] = useState(false);
@@ -54,7 +55,7 @@ function MediaPlayer({ url }: Props) {
                 e.preventDefault()
                 return;
             }
-            if (e.code === "Space" && !(e.target instanceof HTMLInputElement)) {
+            if (e.code === "Space" && !(e.target instanceof HTMLInputElement || e.target instanceof HTMLTextAreaElement)) {
                 e.preventDefault()
                 toggle()
             }
@@ -173,7 +174,7 @@ function MediaPlayer({ url }: Props) {
                     ref={videoRef}
                     autoPlay
                     onClick={toggle}
-                    poster="https://dreamlanddental.com/wp-content/uploads/2018/01/iStock-510634014.jpg"
+                    poster={thumbnail}
                     src={url}
                 >
                 </video>
