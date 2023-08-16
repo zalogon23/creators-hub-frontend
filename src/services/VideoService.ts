@@ -27,8 +27,13 @@ class VideoService {
         const json = await response.json()
         return json.videos
     }
-    async getVideo(videoId: string) {
-        const response = await fetch(`${process.env.NEXT_PUBLIC_BACKEND_URL}/video/${videoId}`);
+    async getVideo(videoId: string, access_token?: string) {
+        const response = await fetch(`${process.env.NEXT_PUBLIC_BACKEND_URL}/video/${videoId}`, {
+            method: "GET",
+            headers: {
+                "Authorization": `Bearer ${access_token}`,
+            }
+        });
         const json = await response.json()
         const video = json.video
         console.log(video)

@@ -3,6 +3,7 @@ import { FontAwesomeIcon } from '@fortawesome/react-fontawesome'
 import { faPaperPlane, faThumbsDown, faThumbsUp } from '@fortawesome/free-solid-svg-icons'
 import { reactionService } from '@/services/ReactionService'
 import { useSession } from 'next-auth/react'
+import { subscriptionService } from '@/services/SubscriptionService'
 
 type Props = {
     video: any
@@ -13,9 +14,20 @@ function MediaDescription({ video }: Props) {
     const [isCommentFocus, setIsCommentFocus] = useState(false)
     const focused = useRef(isCommentFocus)
     const [liked, setLiked] = useState(null as null | boolean)
+    const [subscribed, setSubscribed] = useState(false)
 
     const { data } = useSession()
     const user = data?.customUser
+
+
+    const subscribe = async () => {
+        if (!user) return
+        const newState = !subscribed
+        const result = await subscriptionService.subscribe(video.creator.id, newState, user.access_token)
+        if (result.successful) {
+            setSubscribed(newState)
+        }
+    }
 
     const like = async () => {
         if (!user || liked) return
@@ -38,6 +50,7 @@ function MediaDescription({ video }: Props) {
                 setIsCommentFocus(false)
             }
         })
+        setSubscribed(video.subscribed)
     }, [])
 
     useEffect(() => {
@@ -87,8 +100,9 @@ function MediaDescription({ video }: Props) {
                         </button>
                     </div>
                     <button
-                        className="subscribe-button font-semibold p-1 px-3 w-full"
-                    >SUBSCRIBE</button>
+                        className={`${subscribed ? "text-black" : "text-gray-400"} subscribe-button font-semibold p-1 px-3 w-full`}
+                        onClick={subscribe}
+                    >{subscribed ? "SUBSCRIBED" : "SUBSCRIBE"}</button>
                 </div>
             </section>
             <section className="comment flex flex-row items-center pt-3">
