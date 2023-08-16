@@ -27,32 +27,35 @@ export default NextAuth({
             if (account) {
                 token.access_token = account.access_token;
                 token.refresh_token = account.refresh_token;
-                token.expires_at = account.expires_at
+                token.expires_at = account.expires_at as number * 1000
+                console.log("this current token is supposed to expire: " + token.expires_at)
                 return token
             }
 
-            if (Date.now() / 1000 < (token.expires_at as number)) {
+
+            if (Date.now() < (token.expires_at as number)) {
                 return token
             }
 
+            console.log("this current token is EXPIRED: " + new Date(token.expires_at as number) + " has been a long time ago.")
             return refreshAccessToken(token);
         },
         async session({ session, token }) {
-            session.customUser = {} as UserDTO
+            session.customUser = null as any
             try {
                 // Send properties to the client, like an access_token from a provider.
-                console.log("This is the token SESSION: " + JSON.stringify(token))
                 if (token?.error) {
                     session.customUser.error = token?.error as boolean
                     return session
                 }
-                session.customUser = await userService.getUser(token.access_token as string)
-                console.log("This is the user SESSION: " + JSON.stringify(session.customUser))
-                session.customUser.access_token = token.access_token as string
+                const user = await userService.getUser(token.access_token as string)
+                console.log("this is the USER received: " + JSON.stringify(user))
+                if (!user.message) {
+                    session.customUser = user
+                    session.customUser.access_token = token.access_token as string
+                }
                 return session;
             } catch (err) {
-                session.customUser.error = true
-                console.log(err)
                 return session
             }
         },
@@ -60,7 +63,6 @@ export default NextAuth({
 })
 
 async function refreshAccessToken(token: JWT) {
-    console.log("old expire: " + token.expires_at)
 
     try {
         const url =
@@ -80,23 +82,22 @@ async function refreshAccessToken(token: JWT) {
         })
 
         const refreshedTokens = await response.json()
-        console.log("the result from the refresh token: " + JSON.stringify(refreshedTokens))
+        console.log("the result of my refresh token: " + JSON.stringify(refreshedTokens))
 
         if (!refreshedTokens) {
             throw refreshedTokens
         }
 
-        console.log("new expire: " + new Date(Date.now() + refreshedTokens.expires_in * 1000))
-
-        return {
+        const refreshResponse = {
             ...token,
             access_token: refreshedTokens.access_token,
             expires_at: Date.now() + refreshedTokens.expires_in * 1000,
             refresh_token: refreshedTokens.refresh_token ?? token.refreshToken,
         }
-    } catch (error) {
-        console.log("error: " + JSON.stringify(error))
 
+        console.log("this is what i'm responding after my refresh to the token callback: " + JSON.stringify({ ...refreshResponse, expires_at: new Date(refreshResponse.expires_at) }))
+        return refreshResponse
+    } catch (error) {
         return {
             ...token,
             error: true,

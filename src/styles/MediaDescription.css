@@ -8,6 +8,15 @@
     height: 2.7rem;
     object-fit: cover;
     border-radius: 50%;
+
+}
+
+.comment .avatar{
+    filter: contrast(50%);
+}
+
+.comment .avatar.focused{
+    filter: contrast(100%);
 }
 
 .creator {
@@ -70,12 +79,12 @@
 
 .comment input {
     transition: 50ms;
+    width: 100%;
     outline: none;
 }
 
 .comment .focused {
     border-bottom-color: black;
-    width: 88%;
 }
 
 .comment .focused::placeholder {

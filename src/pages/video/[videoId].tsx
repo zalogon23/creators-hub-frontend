@@ -6,6 +6,7 @@ import { useEffect, useState } from 'react'
 import { useRouter } from 'next/router'
 import { videoService } from '@/services/VideoService'
 import { useSession } from 'next-auth/react'
+import Comments from '@/components/Comments'
 
 function VideoScreen() {
     const { videoId } = useRouter().query
@@ -23,11 +24,12 @@ function VideoScreen() {
         <Scaffold handleClick={() => setExpanded(false)} shelf>
             <Header {...{ expanded, setExpanded }} />
             {
-                video
+                video && status != "loading"
                 &&
                 <>
                     <MediaPlayer url={video.url} thumbnail={video.thumbnail} />
                     <MediaDescription video={video} />
+                    <Comments videoId={video.id} data={data} />
                 </>
             }
         </Scaffold>

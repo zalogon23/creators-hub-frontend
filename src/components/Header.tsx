@@ -1,4 +1,4 @@
-import { faUpload } from '@fortawesome/free-solid-svg-icons'
+import { faC, faUpload } from '@fortawesome/free-solid-svg-icons'
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome'
 import GoogleSignInButton from './GoogleSignInButton'
 import { MouseEventHandler, createRef, useEffect, useState } from 'react'
@@ -9,6 +9,8 @@ import { Oval } from "react-loader-spinner"
 import { videoService } from '@/services/VideoService'
 import { Button, Dialog, DialogActions, DialogContent, DialogContentText, DialogTitle } from "@mui/material"
 import SearchBar from './SearchBar'
+import Link from 'next/link';
+import { useRouter } from 'next/router';
 
 type Props = {
     expanded: boolean,
@@ -16,13 +18,14 @@ type Props = {
 }
 
 function Header({ expanded, setExpanded }: Props) {
-    const { data } = useSession()
+    const { data, status } = useSession()
     const user = data?.customUser
     const [open, setOpen] = useState(false)
     const [title, setTitle] = useState("")
     const [description, setDescription] = useState("")
     const videoFileRef = createRef<HTMLInputElement>()
     const thumbnailFileRef = createRef<HTMLInputElement>()
+    const router = useRouter()
 
     useEffect(() => {
         if (user?.error) signIn()
@@ -33,17 +36,24 @@ function Header({ expanded, setExpanded }: Props) {
                 onClick={() => setExpanded(false)}
                 className="flex items-center py-5 justify-between">
                 <div className="log flex items-center">
-                    {
-                        user
-                            ?
-                            <img src={user?.avatar} className="w-10 h-10 mr-2 rounded-full" />
-                            :
-                            data === null
+                    <div className='flex'>
+                        {
+                            user
                                 ?
-                                <GoogleSignInButton />
+                                <img src={user?.avatar} className="rounded-full button avatar-button" />
                                 :
-                                <Oval color="#000" secondaryColor="#9ca3af" height={38} width={38} />
-                    }
+                                status == "loading"
+                                    ?
+                                    <Oval color="#000" secondaryColor="#9ca3af" height={38} width={38} />
+                                    :
+                                    <GoogleSignInButton />
+                        }
+                        <button
+                            onClick={() => router.push("/")}
+                            className="search-button button ml-1 text-gray-400 py-2 border-gray-400 border-2 rounded-3xl button">
+                            <FontAwesomeIcon icon={faC} />
+                        </button>
+                    </div>
                     {
                         user && open
                         &&
@@ -136,7 +146,7 @@ function Header({ expanded, setExpanded }: Props) {
                                 onClick={(e) => {
                                     e.preventDefault()
                                     videoFileRef.current!.click()
-                                }} className="search-button text-gray-400 py-2">
+                                }} className="button text-gray-400 py-2">
                                 <FontAwesomeIcon icon={faUpload} />
                             </button>
                             <input onChange={async (e) => {

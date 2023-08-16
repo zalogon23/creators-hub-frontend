@@ -32,6 +32,13 @@ form {
     width: 40px;
 }
 
+.button{
+    width: 40px;
+}
+.avatar-button{
+    height: 40px;
+}
+
 .search-input {
     flex: 1;
     display: none;
