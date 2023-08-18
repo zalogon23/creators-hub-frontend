@@ -31,7 +31,8 @@ button:focus {
 }
 
 * {
-  font-size: 0.95rem
+  font-size: 0.95rem;
+  box-sizing: border-box;
 }
 
 img {

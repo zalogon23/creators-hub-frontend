@@ -27,17 +27,19 @@ export default NextAuth({
             if (account) {
                 token.access_token = account.access_token;
                 token.refresh_token = account.refresh_token;
-                token.expires_at = account.expires_at as number * 1000
+                token.expires_at = account.expires_at
                 console.log("this current token is supposed to expire: " + token.expires_at)
                 return token
             }
 
+            console.log(new Date(token.expires_at as number))
 
-            if (Date.now() < (token.expires_at as number)) {
+            if (Date.now() / 1000 < (token.expires_at as number)) {
                 return token
             }
 
-            console.log("this current token is EXPIRED: " + new Date(token.expires_at as number) + " has been a long time ago.")
+            console.log("this current token is EXPIRED: " + new Date(token.expires_at as number * 1000) + " has been a long time ago.")
+            console.log(JSON.stringify(token))
             return refreshAccessToken(token);
         },
         async session({ session, token }) {
@@ -91,7 +93,7 @@ async function refreshAccessToken(token: JWT) {
         const refreshResponse = {
             ...token,
             access_token: refreshedTokens.access_token,
-            expires_at: Date.now() + refreshedTokens.expires_in * 1000,
+            expires_at: Date.now() / 1000 + refreshedTokens.expires_in,
             refresh_token: refreshedTokens.refresh_token ?? token.refreshToken,
         }
 

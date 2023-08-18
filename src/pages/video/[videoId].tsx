@@ -20,6 +20,9 @@ function VideoScreen() {
             setVideo(retrievedVideo)
         })()
     }, [status])
+    useEffect(() => {
+        console.log(video)
+    },)
     return (
         <Scaffold handleClick={() => setExpanded(false)} shelf>
             <Header {...{ expanded, setExpanded }} />

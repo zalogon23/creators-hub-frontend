@@ -27,7 +27,7 @@ function Comments({ videoId, data }: Props) {
                 <div className="comment-head">
                     <img
                         className={`avatar bg-black ${focused && "focused"}`}
-                        src={data?.customUser.avatar} alt="" />
+                        src={data?.customUser?.avatar} />
                     <input
                         onFocus={() => setFocused(true)}
                         onBlur={() => { if (!comment) setFocused(false) }}

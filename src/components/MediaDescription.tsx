@@ -27,34 +27,24 @@ function MediaDescription({ video }: Props) {
     }
 
     const like = async () => {
-        if (!user || liked === true) return
+        if (!user) return
         const result = await reactionService.reactVideo(video.id, true, user.access_token)
         if (result.successful) {
-            setLiked(true)
+            setLiked(liked === true ? null : true)
         }
     }
 
     const dislike = async () => {
-        if (!user || liked === false) return
+        if (!user) return
         const result = await reactionService.reactVideo(video.id, false, user.access_token)
         if (result.successful) {
-            setLiked(false)
+            setLiked(liked === false ? null : false)
         }
     }
     useEffect(() => {
-        setSubscribed(video.subscribed)
-    }, [])
-
-    useEffect(() => {
-        (async () => {
-            if (user) {
-                const result = await reactionService.getVideoReaction(video.id, user.access_token)
-                console.log(result)
-                if (result.message) return
-                setLiked(result.reaction.liked)
-            }
-        })()
-    }, [data])
+        setSubscribed(video.creator.subscribed)
+        setLiked(video.liked)
+    }, [video])
 
     return (
         <div
