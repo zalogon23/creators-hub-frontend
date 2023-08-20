@@ -25,6 +25,7 @@ function MediaPlayer({ url, thumbnail }: Props) {
     const isMouseDownRef = useRef<boolean>(false);
     const draggingPlayerBarRef = useRef<boolean>(false)
     const wasPausedRef = useRef<boolean>(true);
+    const mounterRef = useRef(false);
 
     const pause = () => {
         setPaused(true)
@@ -92,6 +93,8 @@ function MediaPlayer({ url, thumbnail }: Props) {
     };
 
     useEffect(() => {
+        if (mounterRef.current) return
+        mounterRef.current = true
         initializeVideo();
         setupEventListeners()
     }, []);

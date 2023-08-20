@@ -15,14 +15,12 @@ function VideoScreen() {
     const { data, status } = useSession()
     useEffect(() => {
         (async () => {
+            console.log(status)
             if (status == "loading") return
             const retrievedVideo = await videoService.getVideo(videoId as string, data?.customUser?.access_token)
             setVideo(retrievedVideo)
         })()
     }, [status])
-    useEffect(() => {
-        console.log(video)
-    },)
     return (
         <Scaffold handleClick={() => setExpanded(false)} shelf>
             <Header {...{ expanded, setExpanded }} />
