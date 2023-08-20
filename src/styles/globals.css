@@ -42,3 +42,11 @@ img {
 input{
   border-radius: 0;
 }
+
+::-webkit-file-upload-button {
+  display: none;
+}
+
+::file-selector-button {
+ display: none;
+}

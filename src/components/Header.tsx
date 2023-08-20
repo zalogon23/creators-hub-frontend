@@ -92,9 +92,11 @@ function Header({ expanded, setExpanded }: Props) {
                                                 }} className="mt-1 search-button text-gray-400 py-2">
                                                 <FontAwesomeIcon icon={faUpload} />
                                             </button>
-                                            <input onChange={async (e) => {
-                                                setOpen(true)
-                                            }} ref={thumbnailFileRef} type="file" className="w-0" />
+                                            <input
+                                                style={{ display: "none" }}
+                                                onChange={async (e) => {
+                                                    setOpen(true)
+                                                }} ref={thumbnailFileRef} type="file" className="w-0" />
                                         </div>
                                     </form>
                                 </DialogContentText>

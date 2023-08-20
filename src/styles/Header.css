@@ -14,7 +14,7 @@ form {
     padding: 0 !important;
 }
 
-@media (max-width: 380px) {
+@media (max-width: 625px) {
     .login {
         display: none;
     }
@@ -46,7 +46,7 @@ form {
 }
 
 .search-container.expanded {
-    width: 65%;
+    width: 85%;
 }
 
 .search-input.expanded {
