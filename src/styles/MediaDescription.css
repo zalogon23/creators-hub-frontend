@@ -1,6 +1,4 @@
 .video-title {
-    border: solid 2px black;
-    border-radius: 5px;
 }
 
 .avatar {
@@ -11,23 +9,14 @@
 
 }
 
-.comment .avatar{
-    filter: contrast(50%);
-}
-
-.comment .avatar.focused{
-    filter: contrast(100%);
-}
-
 .creator {
     min-height: 100%;
-    border: solid 2px black;
-    border-radius: 5px;
 }
 
 .subscribe-button {
     color: black;
     height: 2.5rem;
+    text-align: center;
 }
 
 .dislike,
@@ -79,7 +68,7 @@
 
 .comment input {
     transition: 50ms;
-    width: 100%;
+    width: 80%;
     outline: none;
 }
 

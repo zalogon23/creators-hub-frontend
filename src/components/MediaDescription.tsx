@@ -51,12 +51,12 @@ function MediaDescription({ video }: Props) {
             className="pt-5"
         >
             <h3
-                className="text-2xl font-semibold p-4 video-title"
+                className="text-2xl font-semibold p-4 pl-0 video-title"
             >{video.title}</h3>
             <section
                 className="flex flex-row pt-3 justify-between">
                 <div className="flex flex-row items-center w-full justify-start">
-                    <div className="creator w-full flex flex-row items-center py-2 px-4">
+                    <div className="creator w-full flex flex-row items-center py-2 pr-4">
                         <img
                             className="avatar"
                             src={video.creator.avatar} alt="" />
@@ -79,7 +79,7 @@ function MediaDescription({ video }: Props) {
                         </button>
                     </div>
                     <button
-                        className={`${subscribed ? "text-black" : "text-gray-400"} subscribe-button font-semibold p-1 px-3 w-full`}
+                        className={`${subscribed ? "text-black" : "text-gray-400"} subscribe-button font-semibold p-1 w-full`}
                         onClick={subscribe}
                     >{subscribed ? "SUBSCRIBED" : "SUBSCRIBE"}</button>
                 </div>

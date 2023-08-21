@@ -66,6 +66,15 @@ video {
     transform: scaleY(1.75);
 }
 
+.loading-bar.dragging-mobile{
+    transform: scaleY(4.5);
+}
+
+
+.loading-bar.dragging-mobile > *{
+    transform: scaleY(0.4);
+}
+
 .loading {
     position: absolute;
     left: 0;

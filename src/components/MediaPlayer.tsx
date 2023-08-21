@@ -12,6 +12,7 @@ function MediaPlayer({ url, thumbnail }: Props) {
     const [interacted, setInteracted] = useState(false);
     const [hovered, setHovered] = useState(false);
     const [myTimeout, setMyTimeout] = useState(null as any as NodeJS.Timeout)
+    const [isMobile, setIsMobile] = useState(false)
 
     const mediaRef = useRef<HTMLElement>(null);
     const videoRef = useRef<HTMLVideoElement>(null);
@@ -27,14 +28,24 @@ function MediaPlayer({ url, thumbnail }: Props) {
     const draggingPlayerBarRef = useRef<boolean>(false)
     const wasPausedRef = useRef<boolean>(true);
     const mounterRef = useRef(false);
+    const isMobileRef = useRef(isMobile);
 
     const pause = () => {
         setPaused(true)
         wasPausedRef.current = true
+        if (isMobile) {
+            setHovered(true)
+            if (myTimeout) clearTimeout(myTimeout)
+        }
     }
     const play = () => {
         setPaused(false)
         wasPausedRef.current = false
+        if (isMobile) {
+            setHovered(true)
+            if (myTimeout) clearTimeout(myTimeout)
+            setMyTimeout(setTimeout(hide, 1800))
+        }
     }
 
     const toggle = () => {
@@ -64,9 +75,9 @@ function MediaPlayer({ url, thumbnail }: Props) {
         };
 
         document.addEventListener("keydown", handleSpacebar)
-        document.addEventListener("mousemove", handleMouseMove)
+        document.addEventListener("mousemove", handleMouseMove, { passive: false })
         document.addEventListener("mouseup", handleMouseUp)
-        document.addEventListener("touchmove", handleMouseMove)
+        document.addEventListener("touchmove", handleMouseMove, { passive: false })
         document.addEventListener("touchend", handleMouseUp)
 
         return () => {
@@ -102,6 +113,8 @@ function MediaPlayer({ url, thumbnail }: Props) {
         mounterRef.current = true
         initializeVideo();
         setupEventListeners()
+        setIsMobile(getIsMobile())
+        isMobileRef.current = getIsMobile()
     }, []);
 
     const getTimeRatio = (event: MouseEvent | TouchEvent) => {
@@ -124,12 +137,17 @@ function MediaPlayer({ url, thumbnail }: Props) {
         barPosition.current.style.width = "0%";
         isMouseDownRef.current = false;
         draggingPlayerBarRef.current = false;
-        bar.current?.classList.remove("dragging")
+        if (!isMobileRef.current) {
+            console.log(isMobileRef.current)
+            bar.current?.classList.remove("dragging")
+        }
         videoRef.current!.currentTime = getTimeRatio(event) * videoDurationRef.current;
         if (!wasPausedRef.current) {
             pausedRef.current = false
             videoRef.current!.play();
         }
+        if (myTimeout) clearTimeout(myTimeout)
+        setMyTimeout(setTimeout(hide, 1800))
     }
 
     const handleMouseMove = (event: MouseEvent | TouchEvent) => {
@@ -149,9 +167,14 @@ function MediaPlayer({ url, thumbnail }: Props) {
     };
 
     const handleMouseDown = (event: TouchEvent | MouseEvent) => {
+        event.preventDefault()
         isMouseDownRef.current = true
         draggingPlayerBarRef.current = true
-        bar.current?.classList.add("dragging")
+        if (event instanceof TouchEvent) {
+            console.log(myTimeout)
+            if (myTimeout) clearTimeout(myTimeout)
+            if (!bar.current?.classList.contains("dragging")) bar.current?.classList.add("dragging")
+        }
         videoRef.current!.pause()
         wasPausedRef.current = pausedRef.current
         handleMouseMove(event)
@@ -170,7 +193,7 @@ function MediaPlayer({ url, thumbnail }: Props) {
         }
     }, [paused]);
 
-    const isMobile = () => {
+    const getIsMobile = () => {
         if (navigator.userAgent.match(/Android/i)
             || navigator.userAgent.match(/webOS/i)
             || navigator.userAgent.match(/iPhone/i)
@@ -193,12 +216,12 @@ function MediaPlayer({ url, thumbnail }: Props) {
             <section
                 ref={mediaRef}
                 onMouseEnter={() => {
-                    if (!isMobile()) {
+                    if (!isMobile) {
                         setHovered(true)
                     }
                 }}
                 onMouseLeave={() => {
-                    if (!isMobile()) {
+                    if (!isMobile) {
                         setHovered(false)
                     }
                 }}
@@ -212,10 +235,12 @@ function MediaPlayer({ url, thumbnail }: Props) {
                     onClick={(e) => {
                         e.preventDefault()
                         console.log(myTimeout)
-                        if (isMobile()) {
+                        if (isMobile) {
+                            if (paused) return
                             setHovered(h => !h)
                             if (myTimeout) clearTimeout(myTimeout)
                             setMyTimeout(setTimeout(hide, 1800))
+                            console.log(myTimeout)
                         } else {
                             toggle()
                         }
@@ -224,59 +249,54 @@ function MediaPlayer({ url, thumbnail }: Props) {
                     src={url}
                 >
                 </video>
-                <div className={`play alert ${!paused && !isMobile() && "active-alert"}`}>
+                <div className={`play alert ${!paused && !isMobile && "active-alert"}`}>
                     <FontAwesomeIcon icon={faPlay} />
                 </div>
-                <div className={`pause alert ${interacted && !isMobile() && paused && "active-alert"}`}>
+                <div className={`pause alert ${interacted && !isMobile && paused && "active-alert"}`}>
                     <FontAwesomeIcon icon={faPause} />
                 </div>
                 <div
-                    onClick={() => { play(); console.log("play button") }}
-                    className={`play alert ${paused && isMobile() && "fixed-alert"}`}>
+                    onClick={() => { play(); setHovered(true); clearTimeout(myTimeout); setMyTimeout(setTimeout(() => setHovered(false), 1800)) }}
+                    className={`play alert ${((paused && isMobile) || (draggingPlayerBarRef.current && paused)) && "fixed-alert"}`}>
                     <FontAwesomeIcon icon={faPlay} />
                 </div>
                 <div
                     onClick={() => pause()}
-                    className={`pause alert ${interacted && hovered && isMobile() && !paused && "fixed-alert"}`}>
+                    className={`pause alert ${((interacted && hovered && isMobile && !paused) || (draggingPlayerBarRef.current && !paused)) && "fixed-alert"}`}>
                     <FontAwesomeIcon icon={faPause} />
                 </div>
-
-                {
-                    interacted
-                    &&
-                    <section
-                        className={`${(paused && interacted) || (hovered && !paused) || draggingPlayerBarRef.current
-                            ? "opacity-1"
-                            : "opacity-0 pointer-events-none"
-                            } bg-black/50 text-white w-full p-3 px-5 duration-150 absolute text-xl bottom-0 controls`}
+                <section
+                    className={`${(paused && interacted) || (hovered && !paused) || draggingPlayerBarRef.current
+                        ? "opacity-1"
+                        : "opacity-0 pointer-events-none"
+                        } bg-black/50 text-white w-full p-3 px-5 duration-150 absolute text-xl bottom-0 controls`}
+                >
+                    <div
+                        className={`loading-bar ${isMobile ? "dragging-mobile" : ""}`}
+                        ref={bar}
+                        onMouseDown={(e) => handleMouseDown(e.nativeEvent)}
+                        onTouchStart={(e) => handleMouseDown(e.nativeEvent)}
+                        onMouseLeave={() => {
+                            barPosition.current!.style.width = "0%"
+                        }}
                     >
-                        <div
-                            className="loading-bar"
-                            ref={bar}
-                            onMouseDown={(e) => handleMouseDown(e.nativeEvent)}
-                            onTouchStart={(e) => handleMouseDown(e.nativeEvent)}
-                            onMouseLeave={() => {
-                                barPosition.current!.style.width = "0%"
-                            }}
-                        >
-                            <div ref={barPosition} className="bar-position"></div>
-                            <div className="bar-trail"></div>
-                            <div ref={loading} className="loading"></div>
-                        </div>
-                        <button onClick={toggle}>
-                            {paused ? <FontAwesomeIcon icon={faPlay} /> : <FontAwesomeIcon icon={faPause} />}
-                        </button>
-                        <button onClick={() => {
-                            if (document.fullscreenElement == null) {
-                                mediaRef.current!.requestFullscreen()
-                            } else {
-                                document.exitFullscreen()
-                            }
-                        }}>
-                            <FontAwesomeIcon icon={faExpand} />
-                        </button>
-                    </section>
-                }
+                        <div ref={barPosition} className="bar-position"></div>
+                        <div className="bar-trail"></div>
+                        <div ref={loading} className="loading"></div>
+                    </div>
+                    <button onClick={toggle}>
+                        {paused ? <FontAwesomeIcon icon={faPlay} /> : <FontAwesomeIcon icon={faPause} />}
+                    </button>
+                    <button onClick={() => {
+                        if (document.fullscreenElement == null) {
+                            mediaRef.current!.requestFullscreen()
+                        } else {
+                            document.exitFullscreen()
+                        }
+                    }}>
+                        <FontAwesomeIcon icon={faExpand} />
+                    </button>
+                </section>
             </section>
         </div>
     );
