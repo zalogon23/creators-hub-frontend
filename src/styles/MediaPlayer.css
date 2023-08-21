@@ -21,13 +21,7 @@ video {
     background-color: black;
 }
 
-.alert {
-    display: none;
-    pointer-events: none;
-}
-
 .alert.active-alert {
-    pointer-events: none;
     display: flex;
     justify-content: center;
     align-items: center;
@@ -36,7 +30,18 @@ video {
     animation: buttonAnimation 800ms forwards;
 }
 
+.alert.fixed-alert {
+    index-z: 100;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    height: 4rem;
+    width: 4rem;
+    pointer-events: all;
+}
+
 .alert {
+    pointer-events: none;
     position: absolute;
     display: none;
     top: calc(50% - 2rem);
