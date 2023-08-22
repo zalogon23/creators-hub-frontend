@@ -69,17 +69,17 @@ function MediaDescription({ video }: Props) {
                         </div>
                     </div>
                 </div>
-                <div className="reactions flex flex-col items-center ml-3">
-                    <div className="flex flex-row w-full">
-                        <button onClick={dislike} className="dislike">
-                            <FontAwesomeIcon className={`${liked === false ? "text-black" : "text-gray-400"}`} icon={faThumbsDown} />
+                <div className="reactions flex flex-col items-center ml-3 gap-2">
+                    <div className="flex flex-row w-full justify-center gap-2">
+                        <button onClick={dislike} className={`rounded-sm dislike ${liked === false ? "bg-black": ""}`}>
+                            <FontAwesomeIcon className={`${liked === false ? "text-white" : "text-gray-400"}`} icon={faThumbsDown} />
                         </button>
-                        <button onClick={like} className="like">
-                            <FontAwesomeIcon className={`${liked === true ? "text-black" : "text-gray-400"}`} icon={faThumbsUp} />
+                        <button onClick={like} className={`rounded-sm like ${liked === true ? "bg-black": ""}`}>
+                            <FontAwesomeIcon className={`${liked === true ? "text-white" : "text-gray-400"}`} icon={faThumbsUp} />
                         </button>
                     </div>
                     <button
-                        className={`${subscribed ? "text-black" : "text-gray-400"} subscribe-button font-semibold p-1 w-full`}
+                        className={`${subscribed ? "text-white bg-black" : "text-gray-400"} subscribe-button rounded-sm font-semibold p-1`}
                         onClick={subscribe}
                     >{subscribed ? "SUBSCRIBED" : "SUBSCRIBE"}</button>
                 </div>

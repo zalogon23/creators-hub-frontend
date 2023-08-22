@@ -15,27 +15,33 @@
 
 .subscribe-button {
     color: black;
-    height: 2.5rem;
     text-align: center;
+    box-shadow: 0 0 2px #0005;
+    width: 91px;
 }
 
 .dislike,
 .like,
 .send {
     color: black;
-    width: 100%;
-    height: 2.5rem;
-    flex: 1;
+    width: 2rem;
+    height: 2rem;
     font-size: 1.2rem;
 }
 
 .like,
 .dislike {
-    border-bottom: solid 2px black;
+    box-shadow: 0 0 2px #0005;
+    padding-left: 1.5px;
+    flex: 1;
 }
 
-.like {
-    border-left: solid 2px black;
+.like{
+    padding-bottom: 4.5px;
+}
+
+.dislike{
+    padding-bottom: 2.5px;
 }
 
 .send {
@@ -44,8 +50,6 @@
 
 .reactions {
     width: 7rem;
-    border: solid 2px black;
-    border-radius: 5px;
 }
 
 .send>svg {
@@ -68,7 +72,7 @@
 
 .comment input {
     transition: 50ms;
-    width: 80%;
+    width: 90%;
     outline: none;
 }
 
