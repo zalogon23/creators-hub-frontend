@@ -6,7 +6,7 @@ const GoogleSignInButton = () => {
 
   return (
     <button
-      className="bg-black text-white rounded-3xl py-2 px-4 font-semibold"
+      className="google-button bg-black text-white rounded-3xl font-semibold"
       onClick={() => signIn()}>
       <FontAwesomeIcon icon={faGoogle} />
       <span className="pl-2 login">Login</span>

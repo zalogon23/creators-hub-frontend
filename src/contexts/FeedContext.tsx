@@ -15,16 +15,16 @@ interface Props {
 
 export default function FeedProvider({ children }: Props) {
     const [videos, setVideos] = useState([])
-    const { data } = useSession()
+    const { data, status } = useSession()
     useEffect(() => {
         (async () => {
-            if (data?.customUser && data?.customUser?.id) {
-                const myVideos = await videoService.getVideos(data.customUser?.id)
+            if (status != "loading") {
+                const myVideos = await videoService.getVideos(data?.customUser?.id ?? "")
                 console.log("these are the videos: " + JSON.stringify(videos))
                 setVideos(myVideos)
             }
         })()
-    }, [data])
+    }, [status])
     return (
         <feedContext.Provider value={{
             videos,

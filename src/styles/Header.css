@@ -18,7 +18,24 @@ form {
     .login {
         display: none;
     }
+
+    .google-button{
+        width: 40px;
+        height: 40px;
+        padding-top: 1.5px;
+        padding-left: 1.5px;
+    }
 }
+
+@media (min-width: 625px) {
+    .google-button{
+        padding-top: 0.5rem;
+        padding-bottom: 0.5rem;
+        padding-left: 1rem;
+        padding-right: 1rem;
+    }
+}
+
 
 .search-container {
     transition: width 400ms;
@@ -46,7 +63,7 @@ form {
 }
 
 .search-container.expanded {
-    width: 85%;
+    width: 78%;
 }
 
 .search-input.expanded {
@@ -62,3 +79,4 @@ form {
     min-height: 6rem;
     max-height: 12rem;
 }
+
