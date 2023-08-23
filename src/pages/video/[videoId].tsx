@@ -23,7 +23,7 @@ function VideoScreen() {
     }, [status])
     return (
         <Scaffold handleClick={() => setExpanded(false)} shelf>
-            <Header {...{ expanded, setExpanded }} />
+            <Header />
             {
                 video && status != "loading"
                 &&

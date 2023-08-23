@@ -11,7 +11,7 @@ function Home({ }: Props) {
   return (
     <FeedProvider>
       <Scaffold handleClick={() => setExpanded(false)} shelf>
-        <Header {...{ expanded, setExpanded }} />
+        <Header />
         <Shelf />
       </Scaffold>
     </FeedProvider>

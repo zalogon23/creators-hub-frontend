@@ -89,6 +89,7 @@ video {
     left: 0;
     height: 5px;
     background-color: #f5f5f585;
+    transition: 1000ms;
 }
 
 .bar-trail {

@@ -1,6 +1,7 @@
 import { faExpand, faPause, faPlay } from '@fortawesome/free-solid-svg-icons';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import React, { useEffect, useRef, useState } from 'react';
+import { toast } from 'react-toastify';
 
 type Props = {
     url: string,
@@ -13,6 +14,8 @@ function MediaPlayer({ url, thumbnail }: Props) {
     const [hovered, setHovered] = useState(false);
     const [myTimeout, setMyTimeout] = useState(null as any as NodeJS.Timeout)
     const [isMobile, setIsMobile] = useState(false)
+    const [isEnd, setIsEnd] = useState(false)
+    const [isDragging, setIsDragging] = useState(false)
 
     const mediaRef = useRef<HTMLElement>(null);
     const videoRef = useRef<HTMLVideoElement>(null);
@@ -25,8 +28,6 @@ function MediaPlayer({ url, thumbnail }: Props) {
     const hoveredRef = useRef<boolean>(hovered);
     const isMobileRef = useRef(isMobile);
     const myTimeoutRef = useRef(myTimeout);
-    const videoDurationRef = useRef<number>(0);
-    const videoPositionRef = useRef<number>(0);
     const isMouseDownRef = useRef<boolean>(false);
     const draggingPlayerBarRef = useRef<boolean>(false)
     const wasPausedRef = useRef<boolean>(true);
@@ -37,9 +38,19 @@ function MediaPlayer({ url, thumbnail }: Props) {
     useEffect(() => { hoveredRef.current = hovered }, [hovered])
     useEffect(() => { isMobileRef.current = isMobile }, [isMobile])
     useEffect(() => { myTimeoutRef.current = myTimeout; console.log("timeout ID: " + myTimeout) }, [myTimeout])
+    useEffect(() => { draggingPlayerBarRef.current = isDragging }, [isDragging])
+
+    const updateProgressBar = () => {
+        if (videoRef.current) {
+            const currentTime = videoRef.current.currentTime;
+            const duration = videoRef.current.duration;
+            const proportion = (currentTime / duration);
+            const width = isNaN(proportion) ? 0 : proportion * 100 ?? 0;
+            loading.current!.style.width = width + "%";
+        }
+    };
 
     const cleanTimeout = () => {
-        console.log("timeout clean ID: " + myTimeoutRef.current)
         if (myTimeoutRef.current) clearTimeout(myTimeoutRef.current)
     }
     const resetTimeout = () => {
@@ -50,6 +61,7 @@ function MediaPlayer({ url, thumbnail }: Props) {
 
     const pause = () => {
         wasPausedRef.current = true
+        videoRef.current!.pause()
         setPaused(true)
         if (isMobile) {
             setHovered(true)
@@ -58,7 +70,9 @@ function MediaPlayer({ url, thumbnail }: Props) {
     }
     const play = () => {
         wasPausedRef.current = false
+        videoRef.current!.play()
         setPaused(false)
+        setIsEnd(false)
         if (isMobileRef.current && interactedRef.current) {
             setHovered(true)
             resetTimeout()
@@ -75,11 +89,6 @@ function MediaPlayer({ url, thumbnail }: Props) {
         else {
             pause()
         }
-    }
-
-    const getTimePercentage = () => {
-        const proportion = videoPositionRef.current / videoDurationRef.current;
-        return isNaN(proportion) ? 0 : proportion * 100 ?? 0;
     }
 
     const setupEventListeners = () => {
@@ -114,17 +123,11 @@ function MediaPlayer({ url, thumbnail }: Props) {
         const video = videoRef.current;
 
         if (video != null) {
-            if (!video.paused) {
-                play()
-            }
-
             video.onloadeddata = () => {
-                videoDurationRef.current = video.duration
                 setInterval(() => {
-                    videoPositionRef.current = video.currentTime;
-                    if (loading.current) loading.current.style.width = `${getTimePercentage()}%`;
-                }, 100);
-            };
+                    updateProgressBar()
+                }, 16)
+            }
         }
     };
 
@@ -143,7 +146,7 @@ function MediaPlayer({ url, thumbnail }: Props) {
             mouseX = event.pageX - mediaRef.current!.offsetLeft;
         } else {
             var touch = event.touches[0] || event.changedTouches[0]
-            mouseX = touch.pageX
+            mouseX = touch.pageX - mediaRef.current!.offsetLeft;
         }
         let ratio = (mouseX / barWidth);
         if (ratio > 1) ratio = 1
@@ -154,8 +157,9 @@ function MediaPlayer({ url, thumbnail }: Props) {
     const handleMouseUp = (event: MouseEvent | TouchEvent) => {
         if (!barPosition.current || !draggingPlayerBarRef.current) return
         isMouseDownRef.current = false;
-        draggingPlayerBarRef.current = false;
-        videoRef.current!.currentTime = getTimeRatio(event) * videoDurationRef.current;
+        setIsDragging(false);
+        videoRef.current!.currentTime = getTimeRatio(event) * videoRef.current!.duration;
+
         console.log(wasPausedRef)
         if (!wasPausedRef.current) {
             play()
@@ -169,14 +173,13 @@ function MediaPlayer({ url, thumbnail }: Props) {
         if (!mediaRef.current) return
         const mediaPlayerBarOnScreen = (pausedRef.current && interactedRef.current) || (hoveredRef.current && !pausedRef.current)
         const onBar = event.target == bar.current
-        if (mediaPlayerBarOnScreen && onBar) {
+        if (mediaPlayerBarOnScreen && onBar && !isMobileRef.current) {
             event.preventDefault();
             barPosition.current!.style.width = getTimeRatio(event) * 100 + "%";
         }
         if (draggingPlayerBarRef.current) {
             event.preventDefault();
-            videoRef.current!.currentTime = getTimeRatio(event) * videoDurationRef.current;
-            loading.current!.style.width = `${getTimePercentage()}%`;
+            videoRef.current!.currentTime = getTimeRatio(event) * videoRef.current!.duration;
         }
     };
 
@@ -184,20 +187,16 @@ function MediaPlayer({ url, thumbnail }: Props) {
         cleanTimeout()
         event.preventDefault()
         isMouseDownRef.current = true
-        draggingPlayerBarRef.current = true
+        setIsDragging(true)
         if (!bar.current?.classList.contains("dragging")) bar.current?.classList.add("dragging")
         wasPausedRef.current = pausedRef.current
+        videoRef.current!.pause()
         setPaused(true)
+        if (isMobile) {
+            setHovered(true)
+        }
         handleMouseMove(event)
     }
-
-    useEffect(() => {
-        if (paused) {
-            videoRef.current?.pause();
-        } else {
-            videoRef.current?.play();
-        }
-    }, [paused]);
 
     const getIsMobile = () => {
         if (navigator.userAgent.match(/Android/i)
@@ -236,8 +235,12 @@ function MediaPlayer({ url, thumbnail }: Props) {
             >
                 <video
                     playsInline
-                    onEnded={() => setPaused(true)}
+                    onEnded={() => {
+                        setIsEnd(true)
+                        setPaused(true)
+                    }}
                     ref={videoRef}
+                    onPlay={() => play()}
                     autoPlay
                     onClick={(e) => {
                         e.preventDefault()
@@ -256,15 +259,15 @@ function MediaPlayer({ url, thumbnail }: Props) {
                     src={url}
                 >
                 </video>
-                <div className={`play alert ${!paused && !isMobile && "active-alert"}`}>
+                <div className={`play alert ${!paused && !isMobile && !isDragging && "active-alert"}`}>
                     <FontAwesomeIcon icon={faPlay} />
                 </div>
-                <div className={`pause alert ${interacted && !isMobile && paused && "active-alert"}`}>
+                <div className={`pause alert ${interacted && !isMobile && paused && !isDragging && !isEnd && "active-alert"}`}>
                     <FontAwesomeIcon icon={faPause} />
                 </div>
                 <div
                     onClick={play}
-                    className={`play alert ${(paused && isMobile) && "fixed-alert"}`}>
+                    className={`play alert ${((paused && isMobile && hovered) || (!interacted) || isEnd) && "fixed-alert"}`}>
                     <FontAwesomeIcon icon={faPlay} />
                 </div>
                 <div
@@ -273,7 +276,7 @@ function MediaPlayer({ url, thumbnail }: Props) {
                     <FontAwesomeIcon icon={faPause} />
                 </div>
                 <section
-                    className={`${((paused && !isMobile) || hovered || draggingPlayerBarRef.current) && interacted
+                    className={`${((paused && !isMobile) || hovered || isDragging || isEnd) && interacted
                         ? "opacity-1"
                         : "opacity-0 pointer-events-none"
                         } bg-black/50 text-white w-full p-3 px-5 duration-150 absolute text-xl bottom-0 controls`}
@@ -283,11 +286,12 @@ function MediaPlayer({ url, thumbnail }: Props) {
                         ref={bar}
                         onMouseDown={(e) => handleMouseDown(e.nativeEvent)}
                         onTouchStart={(e) => handleMouseDown(e.nativeEvent)}
+                        onClick={(e) => e.stopPropagation()}
                         onMouseLeave={() => {
                             barPosition.current!.style.width = "0%"
                         }}
                     >
-                        <div ref={barPosition} className="bar-position"></div>
+                        <div ref={barPosition} className={`bar-position ${isMobile ? "invisible" : ""}`}></div>
                         <div className="bar-trail"></div>
                         <div ref={loading} className="loading"></div>
                     </div>
