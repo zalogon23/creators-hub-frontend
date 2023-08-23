@@ -9,15 +9,9 @@ import { Oval } from "react-loader-spinner"
 import { videoService } from '@/services/VideoService'
 import { Button, Dialog, DialogActions, DialogContent, DialogContentText, DialogTitle } from "@mui/material"
 import SearchBar from './SearchBar'
-import Link from 'next/link';
 import { useRouter } from 'next/router';
 
-type Props = {
-    expanded: boolean,
-    setExpanded: React.Dispatch<React.SetStateAction<boolean>>,
-}
-
-function Header({ expanded, setExpanded }: Props) {
+function Header() {
     const { data, status } = useSession()
     const user = data?.customUser
     const [open, setOpen] = useState(false)
@@ -30,10 +24,12 @@ function Header({ expanded, setExpanded }: Props) {
     useEffect(() => {
         if (user?.error) signIn()
     }, [data])
+    useEffect(() => {
+        console.log(router.pathname)
+    }, [router])
     return (
         <>
             <header
-                onClick={() => setExpanded(false)}
                 className="flex items-center py-5 justify-between">
                 <div className="log flex items-center">
                     <div className='flex'>
@@ -48,11 +44,15 @@ function Header({ expanded, setExpanded }: Props) {
                                     :
                                     <GoogleSignInButton />
                         }
-                        <button
-                            onClick={() => router.push("/")}
-                            className="search-button button ml-1 text-gray-400 py-2 border-gray-400 border-2 rounded-3xl button">
-                            <FontAwesomeIcon icon={faC} />
-                        </button>
+                        {
+                            router.pathname !== "/"
+                            &&
+                            <button
+                                onClick={() => router.push("/")}
+                                className="search-button button ml-1 text-gray-400 py-2 border-gray-400 border-2 rounded-3xl button">
+                                <FontAwesomeIcon icon={faC} />
+                            </button>
+                        }
                     </div>
                     {
                         user && open
@@ -139,7 +139,10 @@ function Header({ expanded, setExpanded }: Props) {
                     }
                 </div>
                 <div className="w-full flex justify-end gap-1">
-                    <SearchBar />
+                    {
+                        router.pathname === "/"
+                        &&
+                        <SearchBar />}
                     {
                         user
                         &&

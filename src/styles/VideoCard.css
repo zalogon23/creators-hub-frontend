@@ -15,6 +15,9 @@
 
 .thumbnail {
     width: 100%;
+}
+
+.thumbnail img{
     aspect-ratio: 16/9;
 }
 

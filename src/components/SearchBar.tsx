@@ -21,7 +21,7 @@ function SearchBar({ }: Props) {
         document.addEventListener("click", e => {
             setExpanded(false)
         })
-    })
+    }, [])
     return (
         <form
             onClick={e => e.stopPropagation()}

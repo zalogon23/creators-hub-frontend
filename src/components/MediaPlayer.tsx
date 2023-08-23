@@ -19,33 +19,53 @@ function MediaPlayer({ url, thumbnail }: Props) {
     const loading = useRef<HTMLDivElement>(null);
     const bar = useRef<HTMLDivElement>(null);
     const barPosition = useRef<HTMLDivElement>(null);
+
     const pausedRef = useRef<boolean>(paused);
     const interactedRef = useRef<boolean>(interacted);
     const hoveredRef = useRef<boolean>(hovered);
+    const isMobileRef = useRef(isMobile);
+    const myTimeoutRef = useRef(myTimeout);
     const videoDurationRef = useRef<number>(0);
     const videoPositionRef = useRef<number>(0);
     const isMouseDownRef = useRef<boolean>(false);
     const draggingPlayerBarRef = useRef<boolean>(false)
     const wasPausedRef = useRef<boolean>(true);
     const mounterRef = useRef(false);
-    const isMobileRef = useRef(isMobile);
+
+    useEffect(() => { pausedRef.current = paused }, [paused])
+    useEffect(() => { interactedRef.current = interacted }, [interacted])
+    useEffect(() => { hoveredRef.current = hovered }, [hovered])
+    useEffect(() => { isMobileRef.current = isMobile }, [isMobile])
+    useEffect(() => { myTimeoutRef.current = myTimeout; console.log("timeout ID: " + myTimeout) }, [myTimeout])
+
+    const cleanTimeout = () => {
+        console.log("timeout clean ID: " + myTimeoutRef.current)
+        if (myTimeoutRef.current) clearTimeout(myTimeoutRef.current)
+    }
+    const resetTimeout = () => {
+        cleanTimeout()
+        const timeoutId = setTimeout(hide, 1800)
+        setMyTimeout(timeoutId)
+    }
 
     const pause = () => {
-        setPaused(true)
         wasPausedRef.current = true
+        setPaused(true)
         if (isMobile) {
             setHovered(true)
-            if (myTimeout) clearTimeout(myTimeout)
+            cleanTimeout()
         }
     }
     const play = () => {
-        setPaused(false)
         wasPausedRef.current = false
-        if (isMobile) {
+        setPaused(false)
+        if (isMobileRef.current && interactedRef.current) {
             setHovered(true)
-            if (myTimeout) clearTimeout(myTimeout)
-            setMyTimeout(setTimeout(hide, 1800))
+            resetTimeout()
+        } else if (isMobileRef.current && !interactedRef.current) {
+            hide()
         }
+        setInteracted(true)
     }
 
     const toggle = () => {
@@ -114,7 +134,6 @@ function MediaPlayer({ url, thumbnail }: Props) {
         initializeVideo();
         setupEventListeners()
         setIsMobile(getIsMobile())
-        isMobileRef.current = getIsMobile()
     }, []);
 
     const getTimeRatio = (event: MouseEvent | TouchEvent) => {
@@ -133,25 +152,20 @@ function MediaPlayer({ url, thumbnail }: Props) {
     }
 
     const handleMouseUp = (event: MouseEvent | TouchEvent) => {
-        if (!mediaRef.current || !barPosition.current || !draggingPlayerBarRef.current) return
-        barPosition.current.style.width = "0%";
+        if (!barPosition.current || !draggingPlayerBarRef.current) return
         isMouseDownRef.current = false;
         draggingPlayerBarRef.current = false;
+        videoRef.current!.currentTime = getTimeRatio(event) * videoDurationRef.current;
+        console.log(wasPausedRef)
+        if (!wasPausedRef.current) {
+            play()
+        }
         if (!isMobileRef.current) {
-            console.log(isMobileRef.current)
             bar.current?.classList.remove("dragging")
         }
-        videoRef.current!.currentTime = getTimeRatio(event) * videoDurationRef.current;
-        if (!wasPausedRef.current) {
-            pausedRef.current = false
-            videoRef.current!.play();
-        }
-        if (myTimeout) clearTimeout(myTimeout)
-        setMyTimeout(setTimeout(hide, 1800))
     }
 
     const handleMouseMove = (event: MouseEvent | TouchEvent) => {
-        console.log(draggingPlayerBarRef.current)
         if (!mediaRef.current) return
         const mediaPlayerBarOnScreen = (pausedRef.current && interactedRef.current) || (hoveredRef.current && !pausedRef.current)
         const onBar = event.target == bar.current
@@ -167,28 +181,20 @@ function MediaPlayer({ url, thumbnail }: Props) {
     };
 
     const handleMouseDown = (event: TouchEvent | MouseEvent) => {
+        cleanTimeout()
         event.preventDefault()
         isMouseDownRef.current = true
         draggingPlayerBarRef.current = true
-        if (event instanceof TouchEvent) {
-            console.log(myTimeout)
-            if (myTimeout) clearTimeout(myTimeout)
-            if (!bar.current?.classList.contains("dragging")) bar.current?.classList.add("dragging")
-        }
-        videoRef.current!.pause()
+        if (!bar.current?.classList.contains("dragging")) bar.current?.classList.add("dragging")
         wasPausedRef.current = pausedRef.current
+        setPaused(true)
         handleMouseMove(event)
     }
 
     useEffect(() => {
-        pausedRef.current = paused;
         if (paused) {
             videoRef.current?.pause();
         } else {
-            if (!interacted) {
-                setInteracted(true);
-                interactedRef.current = true
-            }
             videoRef.current?.play();
         }
     }, [paused]);
@@ -208,6 +214,7 @@ function MediaPlayer({ url, thumbnail }: Props) {
     }
 
     const hide = () => {
+        console.log("HIDE triggered")
         setHovered(false)
     }
 
@@ -234,13 +241,13 @@ function MediaPlayer({ url, thumbnail }: Props) {
                     autoPlay
                     onClick={(e) => {
                         e.preventDefault()
-                        console.log(myTimeout)
                         if (isMobile) {
-                            if (paused) return
-                            setHovered(h => !h)
-                            if (myTimeout) clearTimeout(myTimeout)
-                            setMyTimeout(setTimeout(hide, 1800))
-                            console.log(myTimeout)
+                            if (!paused && !hovered) {
+                                resetTimeout()
+                            } else {
+                                cleanTimeout()
+                            }
+                            setHovered(!hovered)
                         } else {
                             toggle()
                         }
@@ -256,17 +263,17 @@ function MediaPlayer({ url, thumbnail }: Props) {
                     <FontAwesomeIcon icon={faPause} />
                 </div>
                 <div
-                    onClick={() => { play(); setHovered(true); clearTimeout(myTimeout); setMyTimeout(setTimeout(() => setHovered(false), 1800)) }}
-                    className={`play alert ${((paused && isMobile) || (draggingPlayerBarRef.current && paused)) && "fixed-alert"}`}>
+                    onClick={play}
+                    className={`play alert ${(paused && isMobile) && "fixed-alert"}`}>
                     <FontAwesomeIcon icon={faPlay} />
                 </div>
                 <div
-                    onClick={() => pause()}
-                    className={`pause alert ${((interacted && hovered && isMobile && !paused) || (draggingPlayerBarRef.current && !paused)) && "fixed-alert"}`}>
+                    onClick={pause}
+                    className={`pause alert ${(interacted && hovered && isMobile && !paused) && "fixed-alert"}`}>
                     <FontAwesomeIcon icon={faPause} />
                 </div>
                 <section
-                    className={`${(paused && interacted) || (hovered && !paused) || draggingPlayerBarRef.current
+                    className={`${((paused && !isMobile) || hovered || draggingPlayerBarRef.current) && interacted
                         ? "opacity-1"
                         : "opacity-0 pointer-events-none"
                         } bg-black/50 text-white w-full p-3 px-5 duration-150 absolute text-xl bottom-0 controls`}
