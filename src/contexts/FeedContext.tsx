@@ -1,6 +1,7 @@
 import { videoService } from "@/services/VideoService"
 import { useSession } from "next-auth/react"
 import { ReactNode, createContext, useEffect, useState } from "react"
+import { toast } from "react-toastify"
 
 interface FeedContext {
     videos: any[],
@@ -30,6 +31,12 @@ export default function FeedProvider({ children }: Props) {
             videos,
             search: async (value: string) => {
                 const videos = await videoService.searchVideos(value)
+                if (videos.length < 1) {
+                    toast.warning("There are no videos for such search.", {
+                        autoClose: 3000
+                    })
+                    return
+                }
                 setVideos(videos)
             }
         }}>
