@@ -22,6 +22,7 @@ function MediaPlayer({ url, thumbnail }: Props) {
     const loading = useRef<HTMLDivElement>(null);
     const bar = useRef<HTMLDivElement>(null);
     const barPosition = useRef<HTMLDivElement>(null);
+    const barTrail = useRef<HTMLDivElement>(null);
 
     const pausedRef = useRef<boolean>(paused);
     const interactedRef = useRef<boolean>(interacted);
@@ -140,14 +141,17 @@ function MediaPlayer({ url, thumbnail }: Props) {
     }, []);
 
     const getTimeRatio = (event: MouseEvent | TouchEvent) => {
-        const barWidth = mediaRef.current!.offsetWidth;
+        const barWidth = barTrail.current!.offsetWidth;
+        const leftOffset = mediaRef.current!.offsetLeft + ((mediaRef.current!.offsetWidth - barTrail.current!.offsetWidth) / 2)
         let mouseX: number
+        
         if (event instanceof MouseEvent) {
-            mouseX = event.pageX - mediaRef.current!.offsetLeft;
+            mouseX = event.pageX - leftOffset;
         } else {
             var touch = event.touches[0] || event.changedTouches[0]
-            mouseX = touch.pageX - mediaRef.current!.offsetLeft;
+            mouseX = touch.pageX - leftOffset;
         }
+        
         let ratio = (mouseX / barWidth);
         if (ratio > 1) ratio = 1
         if (ratio < 0) ratio = 0
@@ -292,7 +296,7 @@ function MediaPlayer({ url, thumbnail }: Props) {
                         }}
                     >
                         <div ref={barPosition} className={`bar-position ${isMobile ? "invisible" : ""}`}></div>
-                        <div className="bar-trail"></div>
+                        <div ref={barTrail} className="bar-trail"></div>
                         <div ref={loading} className="loading"></div>
                     </div>
                     <button onClick={toggle}>
@@ -300,7 +304,11 @@ function MediaPlayer({ url, thumbnail }: Props) {
                     </button>
                     <button onClick={() => {
                         if (document.fullscreenElement == null) {
-                            mediaRef.current!.requestFullscreen()
+                            if (isMobile) {
+                                videoRef.current!.requestFullscreen()
+                            } else {
+                                mediaRef.current!.requestFullscreen()
+                            }
                         } else {
                             document.exitFullscreen()
                         }
